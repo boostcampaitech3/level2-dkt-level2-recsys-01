@@ -5,13 +5,13 @@ import numpy as np
 import torch
 import wandb
 
-from .criterion import get_criterion
+from tqdm import tqdm
 from .dataloader import get_loaders
+from .criterion import get_criterion
 from .metric import get_metric
 from .model import LSTM, LSTMATTN, Bert
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
-
 
 def run(args, train_data, valid_data):
     train_loader, valid_loader = get_loaders(args, train_data, valid_data)
@@ -28,8 +28,7 @@ def run(args, train_data, valid_data):
 
     best_auc = -1
     early_stopping_counter = 0
-    for epoch in range(args.n_epochs):
-
+    for epoch in tqdm(range(args.n_epochs)):
         print(f"Start Training: Epoch {epoch + 1}")
 
         ### TRAIN
@@ -38,7 +37,7 @@ def run(args, train_data, valid_data):
         )
 
         ### VALID
-        auc, acc = validate(valid_loader, model, args)
+        auc, acc= validate(valid_loader, model, args)
 
         ### TODO: model save or early stopping
         wandb.log(
@@ -63,6 +62,7 @@ def run(args, train_data, valid_data):
                 args.model_dir,
                 "model.pt",
             )
+
             early_stopping_counter = 0
         else:
             early_stopping_counter += 1
@@ -114,7 +114,7 @@ def train(train_loader, model, optimizer, scheduler, args):
 
     # Train AUC / ACC
     auc, acc = get_metric(total_targets, total_preds)
-    loss_avg = sum(losses) / len(losses)
+    loss_avg = sum(losses)/len(losses)
     print(f"TRAIN AUC : {auc} ACC : {acc}")
     return auc, acc, loss_avg
 
@@ -162,7 +162,6 @@ def inference(args, test_data):
     _, test_loader = get_loaders(args, None, test_data)
 
     total_preds = []
-
     for step, batch in enumerate(test_loader):
         input = process_batch(batch, args)
 
@@ -202,19 +201,19 @@ def get_model(args):
 
     return model
 
-
 # 배치 전처리
 def process_batch(batch, args):
 
-    test, question, tag, correct, mask = batch
+    test, question, tag, correct, conts, mask = batch
 
     # change to float
     mask = mask.type(torch.FloatTensor)
     correct = correct.type(torch.FloatTensor)
 
     # interaction을 임시적으로 correct를 한칸 우측으로 이동한 것으로 사용
-    interaction = correct + 1  # 패딩을 위해 correct값에 1을 더해준다.
+    interaction = correct + 1 # 패딩을 위해 correct값에 1을 더해준다.
     interaction = interaction.roll(shifts=1, dims=1)
+    interaction[:, 0] = 0
     interaction_mask = mask.roll(shifts=1, dims=1)
     interaction_mask[:, 0] = 0
     interaction = (interaction * interaction_mask).to(torch.int64)
@@ -234,9 +233,9 @@ def process_batch(batch, args):
     mask = mask.to(args.device)
 
     interaction = interaction.to(args.device)
+    conts = conts.to(args.device)
 
-    return (test, question, tag, correct, mask, interaction)
-
+    return (test, question, tag, correct, mask, interaction, conts)
 
 # loss계산하고 parameter update!
 def compute_loss(preds, targets):
@@ -244,11 +243,10 @@ def compute_loss(preds, targets):
     Args :
         preds   : (batch_size, max_seq_len)
         targets : (batch_size, max_seq_len)
-
     """
     loss = get_criterion(preds, targets)
 
-    # 마지막 시퀀드에 대한 값만 loss 계산
+    #마지막 시퀀드에 대한 값만 loss 계산
     loss = loss[:, -1]
     loss = torch.mean(loss)
     return loss

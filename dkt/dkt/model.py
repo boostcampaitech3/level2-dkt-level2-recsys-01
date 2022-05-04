@@ -4,8 +4,7 @@ import torch.nn as nn
 try:
     from transformers.modeling_bert import BertConfig, BertEncoder, BertModel
 except:
-    from transformers.models.bert.modeling_bert import (BertConfig,
-                                                        BertEncoder, BertModel)
+    from transformers.models.bert.modeling_bert import BertConfig, BertEncoder, BertModel
 
 
 class LSTM(nn.Module):
@@ -17,13 +16,14 @@ class LSTM(nn.Module):
         self.hidden_dim = self.args.hidden_dim
         self.n_layers = self.args.n_layers
 
-        # Embedding
+        # Embedding 
         # interaction은 현재 correct로 구성되어있다. correct(1, 2) + padding(0)
+
         self.embedding_interaction = nn.Embedding(3, self.hidden_dim // 3)
         self.embedding_test = nn.Embedding(self.args.n_test + 1, self.hidden_dim // 3)
         self.embedding_question = nn.Embedding(
             self.args.n_questions + 1, self.hidden_dim // 3
-        )
+            )
         self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
 
         # embedding combination projection
@@ -49,12 +49,12 @@ class LSTM(nn.Module):
 
     def forward(self, input):
 
-        test, question, tag, _, mask, interaction = input
+        test, question, tag, _, mask, interaction, _= input
 
         batch_size = interaction.size(0)
 
         # Embedding
-
+        
         embed_interaction = self.embedding_interaction(interaction)
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
@@ -65,8 +65,8 @@ class LSTM(nn.Module):
                 embed_interaction,
                 embed_test,
                 embed_question,
-                embed_tag,
-            ],
+                embed_tag, 
+            ], 
             2,
         )
 
@@ -92,18 +92,17 @@ class LSTMATTN(nn.Module):
         self.n_layers = self.args.n_layers
         self.n_heads = self.args.n_heads
         self.drop_out = self.args.drop_out
-
+        self.n_cont = self.args.n_cont
         # Embedding
         # interaction은 현재 correct로 구성되어있다. correct(1, 2) + padding(0)
-        self.embedding_interaction = nn.Embedding(3, self.hidden_dim // 3)
-        self.embedding_test = nn.Embedding(self.args.n_test + 1, self.hidden_dim // 3)
-        self.embedding_question = nn.Embedding(
-            self.args.n_questions + 1, self.hidden_dim // 3
-        )
-        self.embedding_tag = nn.Embedding(self.args.n_tag + 1, self.hidden_dim // 3)
+        self.embedding_interaction = nn.Sequential(nn.Embedding(3, self.hidden_dim), nn.LayerNorm(self.hidden_dim))
+        self.embedding_test = nn.Sequential(nn.Embedding(self.args.n_test + 1, self.hidden_dim), nn.LayerNorm(self.hidden_dim))
+        self.embedding_question = nn.Sequential(nn.Embedding(self.args.n_questions + 1, self.hidden_dim), nn.LayerNorm(self.hidden_dim))
+        self.embedding_tag = nn.Sequential(nn.Embedding(self.args.n_tag + 1, self.hidden_dim), nn.LayerNorm(self.hidden_dim))
 
-        # embedding combination projection
-        self.comb_proj = nn.Linear((self.hidden_dim // 3) * 4, self.hidden_dim)
+        self.batchNorm = nn.BatchNorm1d(self.n_cont)
+        self.embedding_cont = nn.Sequential(nn.Linear(self.n_cont, self.hidden_dim),
+                         nn.LayerNorm(self.hidden_dim))
 
         self.lstm = nn.LSTM(
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
@@ -135,29 +134,20 @@ class LSTMATTN(nn.Module):
         return (h, c)
 
     def forward(self, input):
-
-        # test, question, tag, _, mask, interaction, _ = input
-        test, question, tag, _, mask, interaction = input
+        test, question, tag, _, mask, interaction, conts = input
 
         batch_size = interaction.size(0)
 
-        # Embedding
         embed_interaction = self.embedding_interaction(interaction)
         embed_test = self.embedding_test(test)
         embed_question = self.embedding_question(question)
         embed_tag = self.embedding_tag(tag)
 
-        embed = torch.cat(
-            [
-                embed_interaction,
-                embed_test,
-                embed_question,
-                embed_tag,
-            ],
-            2,
-        )
+        embed_cont = self.batchNorm(conts.view(-1, conts.size(-1)))
+        embed_cont = embed_cont.view(batch_size, -1, conts.size(-1))
+        embed_cont = self.embedding_cont(embed_cont)
 
-        X = self.comb_proj(embed)
+        X = embed_interaction + embed_test + embed_question + embed_tag + embed_cont
 
         hidden = self.init_hidden(batch_size)
         out, hidden = self.lstm(X, hidden)
@@ -191,7 +181,7 @@ class Bert(nn.Module):
         # Embedding
         # interaction은 현재 correct으로 구성되어있다. correct(1, 2) + padding(0)
         self.embedding_interaction = nn.Embedding(3, self.hidden_dim // 3)
-
+        
         self.embedding_test = nn.Embedding(self.args.n_test + 1, self.hidden_dim // 3)
         self.embedding_question = nn.Embedding(
             self.args.n_questions + 1, self.hidden_dim // 3
@@ -221,8 +211,7 @@ class Bert(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        # test, question, tag, _, mask, interaction, _ = input
-        test, question, tag, _, mask, interaction = input
+        test, question, tag, _, mask, interaction, _ = input
         batch_size = interaction.size(0)
 
         # 신나는 embedding
