@@ -1,7 +1,7 @@
 import argparse
 
 
-def parse_args(mode="train2"):
+def parse_args(mode="train"):
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--seed", default=42, type=int, help="seed")
@@ -14,7 +14,7 @@ def parse_args(mode="train2"):
     parser.add_argument("--file_name", default="preprocessed_train_data.csv", type=str, help="train file name")
 
     parser.add_argument("--model_dir", default="models/", type=str, help="model directory")
-    parser.add_argument("--model_name", default="model7", type=str, help="model file name")
+    parser.add_argument("--model_name", default="model.pt", type=str, help="model file name")
 
     parser.add_argument("--output_dir", default="output/", type=str, help="output directory")
     parser.add_argument("--test_file_name", default="preprocessed_test_data.csv", type=str, help="test file name")

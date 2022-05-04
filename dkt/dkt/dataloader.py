@@ -81,17 +81,14 @@ class Preprocess:
         df[cont_cols] = df[cont_cols].astype(np.float32)
         return df
 
-    def __feature_engineering(self, df, is_train, train_df=None):
-        if is_train:
-            train_df = df
-
+    def __feature_engineering(self, df):
         df.rename(columns={'userID': 'user', 'answerCode': 'answer', 'KnowledgeTag': 'tag'}, inplace=True)
         df.sort_values(by=['user','Timestamp'], inplace=True)
-        correct_t = train_df.groupby(['testId'])['answer'].agg(['mean', 'sum'])
+        correct_t = df.groupby(['testId'])['answer'].agg(['mean', 'sum'])
         correct_t.columns = ["test_mean", 'test_sum']
-        correct_k = train_df.groupby(['tag'])['answer'].agg(['mean', 'sum'])
+        correct_k = df.groupby(['tag'])['answer'].agg(['mean', 'sum'])
         correct_k.columns = ["tag_mean", 'tag_sum']
-        correct_a = train_df.groupby(['assessmentItemID'])['answer'].agg(['mean', 'sum'])
+        correct_a = df.groupby(['assessmentItemID'])['answer'].agg(['mean', 'sum'])
         correct_a.columns = ["assessment_mean", 'assessment_sum']
 
         df.sort_values(by=['user','Timestamp'], inplace=True)
@@ -178,12 +175,11 @@ class Preprocess:
         return df
 
 
-    def load_data_from_file(self, file_name, is_train=True, train_df=None):
+    def load_data_from_file(self, file_name, is_train=True):
         csv_file_path = os.path.join(self.args.data_dir, file_name)
         df = pd.read_csv(csv_file_path)     #, nrows=100000)
-        if not is_train:
-            train_df = pd.read_csv(os.path.join(self.args.data_dir, train_df))
-        df = self.__feature_engineering(df, is_train, train_df)
+
+        df = self.__feature_engineering(df)
         df = self.__preprocessing(df, is_train)
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
@@ -215,8 +211,8 @@ class Preprocess:
     def load_train_data(self, file_name):
         self.train_data = self.load_data_from_file(file_name)
 
-    def load_test_data(self, file_name, train_df=None):
-        self.test_data = self.load_data_from_file(file_name, is_train= False, train_df=train_df)
+    def load_test_data(self, file_name):
+        self.test_data = self.load_data_from_file(file_name, is_train= False)
 
 
 class DKTDataset(torch.utils.data.Dataset):
