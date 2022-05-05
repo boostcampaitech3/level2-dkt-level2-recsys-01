@@ -5,3 +5,4 @@
 + `dkt/` 이 폴더 내에는 DKT task를 Sequential Model로 풀어나가는 베이스라인이 담겨져있습니다.
 + `lightgcn/` 이 폴더 내에는 Graph 기법으로 풀어나가는 베이스라인이 담겨져있습니다.
 + `lgbm/` 이 폴더 내에는 lightGBM 기법으로 풀어나가는 베이스라인이 담겨져있습니다.
++ `catboost/` 이 폴더 내에는 catboost 라이브러리를 활용한 베이스라인이 담겨져있습니다.
