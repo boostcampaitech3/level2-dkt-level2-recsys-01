@@ -17,6 +17,7 @@ TEST_NUMBER: Final = "test"
 T_ELAPSED: Final = "test_elapsed"
 ITEM_ID = "assessmentItemID"
 ITEM_NUMBER: Final = "item"
+ELAPSED: Final = "elapsed"
 
 
 class FeatureEngineer:
@@ -94,6 +95,7 @@ class FeatureEngineer:
         사용자에 대한 feature engineering을 하는 메소드.
         사용자의 feature는 시간이 지날 수록 업데이트 되는 경향이 있다. (ex. 공부 양과 시간에 따른 사용자의 역량 변화)
         1. 사용자별 시간에 따른 '정답률'과 '학습시간'의 변화
+        2. 사용자의 prev elapsed, prev test elapsed
         '''
         user_df = self.org_df.copy()
         
@@ -112,6 +114,10 @@ class FeatureEngineer:
             cum_feats = self._get_cumulative_value_by_group(target, T_ELAPSED)
             user_df[prefix + "_cum_telapsed"] = cum_feats[0]
             user_df[prefix + "_mean_telapsed"] = cum_feats[2]
+        
+        # 이전 문제를 푸는데 걸린 시간 (prev elapsed, prev test_elapsed)
+        user_df["prev_elapsed"] = user_df[ELAPSED].shift()
+        user_df["prev_test_elapsed"] = user_df[T_ELAPSED].shift()
         
         self.user_features = list(set(user_df.columns.values) - set(self.org_df.columns.values))
         return user_df[self.user_features]
@@ -185,7 +191,7 @@ class FeatureEngineer:
 if __name__ == '__main__':
     start = time.time()
     org_df = pd.read_csv("/opt/ml/input/data/preprocessed_data.csv")
-    fe = FeatureEngineer(org_df, descript="2022/05/05 v1.1")
+    fe = FeatureEngineer(org_df, descript="2022/05/07 v1.2")
     final_df = fe.run_feature_engineering(save=True)
     
     # feat_config = list()
