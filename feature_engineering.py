@@ -33,6 +33,7 @@ class FeatureEngineer:
         self.sep = sep
         
         self.final_df = None
+        self.feature_config = None
     
     def get_user_features(self):
         return self.user_features
@@ -42,9 +43,11 @@ class FeatureEngineer:
     
     def _get_cumulative_value_by_group(self, grouping_targets, feature, df=None):
         if df is None:
-            df = self.org_df
+            df = self.org_df[grouping_targets + [feature]].copy()
+        
         group = df.groupby(grouping_targets)[feature]
-        cumsum = group.transform(lambda x : x.cumsum().shift(1))
+        df["temp"] = group.cumsum()
+        cumsum = df.groupby(grouping_targets)["temp"].shift(1)
         cumcount = group.cumcount()
         cummean = cumsum / cumcount
         return cumsum, cumcount, cummean
@@ -90,7 +93,7 @@ class FeatureEngineer:
         '''
         사용자에 대한 feature engineering을 하는 메소드.
         사용자의 feature는 시간이 지날 수록 업데이트 되는 경향이 있다. (ex. 공부 양과 시간에 따른 사용자의 역량 변화)
-        따라서 '정답률'과 '학습시간'의 변화를 feature로 주었다.
+        1. 사용자별 시간에 따른 '정답률'과 '학습시간'의 변화
         '''
         user_df = self.org_df.copy()
         
@@ -105,7 +108,7 @@ class FeatureEngineer:
             user_df[prefix + "_acc"] = cum_feats[2]
         
         ## 시간에 따른 학습시간 feature (test_elapsed cumsum, mean)
-        for prefix, target in zip(column_prefixes, grouping_targets[1:]):
+        for prefix, target in zip(column_prefixes[1:], grouping_targets[1:]):
             cum_feats = self._get_cumulative_value_by_group(target, T_ELAPSED)
             user_df[prefix + "_cum_telapsed"] = cum_feats[0]
             user_df[prefix + "_mean_telapsed"] = cum_feats[2]
@@ -117,6 +120,8 @@ class FeatureEngineer:
     def _explore_item_features(self):
         '''
         item 즉, 문제에 대한 feature engineering을 하는 메소드.
+        1. 각 item feature별 평균 정답률과 풀이에 걸린 시간
+        2. 해당 문제번호가 시험지에서 위치하는 정도(last_prob)
         '''
         item_df = self.org_df.copy()
         
@@ -141,19 +146,25 @@ class FeatureEngineer:
         return item_df[self.item_features]
     
     def run_feature_engineering(self, save=False):
-        print("user fe started...")
+        print(">>> user fe started...")
         start = time.time()
         user_feature_df = self._explore_user_features()
-        print(f"user fe done!\n\ttaken: {time.time() - start}")
+        print(f"  Taken time: {time.time() - start: .3f} secs\n<<< user fe done!\n")
         
-        print("item fe started...")
+        print(">>> item fe started...")
         start = time.time()
         item_feature_df = self._explore_item_features()
-        print(f"item fe done!\n\ttaken: {time.time() - start}")
+        print(f"  Taken time: {time.time() - start: .3f} secs\n<<< item fe done!\n")
+        
+        self.feature_config = {
+            "description": self.descript,
+            "org_features": self.org_df.columns.values.tolist(),
+            "user_features": self.user_features,
+            "item_features": self.item_features
+        }
         
         self.final_df = pd.concat([self.org_df, user_feature_df, item_feature_df], axis=1)
         if save:
-            print("saving preprocessed_data...")
             self.save()
         return self.final_df
     
@@ -162,23 +173,25 @@ class FeatureEngineer:
         
         if self.final_df is None:
             raise Exception("You should call '.run_feature_enginnering()' function first!")
-            
-        feature_config = {
-            "description": self.descript,
-            "user_features": self.user_features,
-            "item_features": self.item_features
-        }
         
         with open(os.path.join(save_dir, "features.json"), "w", encoding="utf-8") as f:
-            json.dump(feature_config, f)
-            
+            json.dump(self.feature_config, f)
+        
+        print(">>> saving preprocessed_data.csv...")
         self.final_df.to_csv(os.path.join(save_dir, "processed_data.csv"), index=False)
+        print("<<< done!\n")
     
 
 if __name__ == '__main__':
     start = time.time()
     org_df = pd.read_csv("/opt/ml/input/data/preprocessed_data.csv")
-    fe = FeatureEngineer(org_df, descript="test")
-    final_df = fe.run_feature_engineering()
-    fe.save()
-    print(f"taken time: {time.time() - start}")
+    fe = FeatureEngineer(org_df, descript="2022/05/05 v1.1")
+    final_df = fe.run_feature_engineering(save=True)
+    
+    # feat_config = list()
+    # for feats in list(fe.feature_config.values())[1:]:
+    #     feat_config.extend(feats)
+    # if set(feat_config) != set(final_df.columns.values):
+    #     raise ValueError(f"diffs: {(set(feat_config) | set(final_df.columns.values)) - (set(feat_config) & set(final_df.columns.values))}")
+    
+    print(f"Total taken time: {time.time() - start: .3f} secs")
