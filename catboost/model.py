@@ -14,6 +14,7 @@ class CatBoostModel:
                                         eval_metric="AUC",
                                         early_stopping_rounds=args.early_stopping,
                                         train_dir=self.output_dir,
+                                        learning_rate=args.lr,
                                         
                                         task_type="GPU",
                                         devices="0")
@@ -24,11 +25,12 @@ class CatBoostModel:
                        eval_set=eval_set,
                        verbose=verbose)
     
-    def save_features(self, features, cat_features):
+    def save_features(self, features, cat_features, feature_descript):
         # feature names
         with open(os.path.join(self.output_dir, "features.json"), "w") as f:
             feature_dict = {
                 "num_feats": len(features),
+                "description": feature_descript,
                 "FEAT": features,
                 "CAT_FEAT": cat_features
             }

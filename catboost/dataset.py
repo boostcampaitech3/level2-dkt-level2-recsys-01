@@ -2,12 +2,13 @@ import json
 
 import pandas as pd
 
+from features import Features
 
 class GBMDataset:
-    def __init__(self, data_path, descript=None, feat_path="/opt/ml/input/code/catboost/feature_config.json"):
-        features = self._get_features_from(feat_path)
-        self.features = features["FEAT"]
-        self.cat_features = features["CAT_FEAT"]
+    def __init__(self, data_path, descript=None):
+        features = Features()
+        self.features = features.FEAT
+        self.cat_features = features.CAT_FEAT
         self.num_features = list(set(self.features) - set(self.cat_features))
         self.df = pd.read_csv(data_path)
         
