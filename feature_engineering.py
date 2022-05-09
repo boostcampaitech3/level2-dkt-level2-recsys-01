@@ -12,6 +12,7 @@ TIMESTAMP: Final = "Timestamp"
 ANSWER: Final = "answer"
 CATEGORY: Final = "category"
 TAG: Final = "tag"
+CHAPTER: Final = "chapter"
 TEST_ID: Final = "testId"
 TEST_NUMBER: Final = "test"
 T_ELAPSED: Final = "test_elapsed"
@@ -99,7 +100,7 @@ class FeatureEngineer:
         '''
         user_df = self.org_df.copy()
         
-        grouping_targets = [[USER], [USER, CATEGORY], [USER, TAG], [USER, TEST_ID]]
+        grouping_targets = [[USER], [USER, CATEGORY], [USER, TAG], [USER, CHAPTER], [USER, TEST_ID]]
         column_prefixes = [self.sep.join(targets) for targets in grouping_targets]
     
         # 시간에 따른 정답률 feature
@@ -128,11 +129,12 @@ class FeatureEngineer:
         item 즉, 문제에 대한 feature engineering을 하는 메소드.
         1. 각 item feature별 평균 정답률과 풀이에 걸린 시간
         2. 해당 문제번호가 시험지에서 위치하는 정도(last_prob)
+        3. 시험지별 tag 개수
         '''
         item_df = self.org_df.copy()
         
         # item feature 별 평균 정답률과 평균 풀이에 걸린 시간
-        grouping_targets = [[CATEGORY], [TAG], [TEST_ID], [ITEM_ID]]
+        grouping_targets = [[CATEGORY], [TAG], [CHAPTER], [TEST_ID], [ITEM_ID]]
         features = [ANSWER, T_ELAPSED]
         aggs = [["mean", "sum"], "mean"]
         
@@ -147,6 +149,13 @@ class FeatureEngineer:
         # last_prob feature (해당 문제가 마지막 문항 번호인지 )
         # == 해당 문제 번호 / 해당 문제가 속한 시험의 가장 마지막 번호
         item_df["last_prob"] = self._get_last_prob_feature()
+        
+        # testId당 포함된 tag개수
+        num_tags_per_test = self._get_agg_value_by_group(grouping_targets=[TEST_ID],
+                                                         features=[TAG],
+                                                         aggs=["nunique"])
+        num_tags_per_test.columns = ["num_tags_per_test"]
+        item_df = pd.merge(item_df, num_tags_per_test, on=TEST_ID, how="left")
         
         self.item_features = list(set(item_df.columns.values) - set(self.org_df.columns.values))
         return item_df[self.item_features]
@@ -190,8 +199,8 @@ class FeatureEngineer:
 
 if __name__ == '__main__':
     start = time.time()
-    org_df = pd.read_csv("/opt/ml/input/data/preprocessed_data.csv")
-    fe = FeatureEngineer(org_df, descript="2022/05/07 v1.2")
+    org_df = pd.read_csv("/opt/ml/input/data/new_preprocessed_data.csv")
+    fe = FeatureEngineer(org_df, descript="2022/05/08 v1.3")
     final_df = fe.run_feature_engineering(save=True)
     
     # feat_config = list()
