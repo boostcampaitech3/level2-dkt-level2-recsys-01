@@ -128,6 +128,7 @@ class FeatureEngineer:
         '''
         item 즉, 문제에 대한 feature engineering을 하는 메소드.
         1. 각 item feature별 평균 정답률과 풀이에 걸린 시간
+            1-1. 평균 trials
         2. 해당 문제번호가 시험지에서 위치하는 정도(last_prob)
         3. 시험지별 tag 개수
         '''
@@ -144,6 +145,15 @@ class FeatureEngineer:
                                                     aggs=aggs)
             column_names = self._get_column_names(targets, features, aggs)
             group_df.columns = column_names
+            item_df = pd.merge(item_df, group_df, on=targets, how="left")
+        
+        # 평균 trials
+        for targets in grouping_targets[:-1]:
+            group_df = self._get_agg_value_by_group(grouping_targets=targets,
+                                                    features=[TIMESTAMP, ITEM_ID],
+                                                    aggs=["count", "nunique"])
+            group_df[self.sep.join(targets + ["mean_trials"])] = group_df[TIMESTAMP] / group_df[ITEM_ID]
+            group_df = group_df.drop(columns=[TIMESTAMP, ITEM_ID])
             item_df = pd.merge(item_df, group_df, on=targets, how="left")
         
         # last_prob feature (해당 문제가 마지막 문항 번호인지 )
@@ -200,7 +210,7 @@ class FeatureEngineer:
 if __name__ == '__main__':
     start = time.time()
     org_df = pd.read_csv("/opt/ml/input/data/new_preprocessed_data.csv")
-    fe = FeatureEngineer(org_df, descript="2022/05/08 v1.3")
+    fe = FeatureEngineer(org_df, descript="2022/05/11 v1.4")
     final_df = fe.run_feature_engineering(save=True)
     
     # feat_config = list()
