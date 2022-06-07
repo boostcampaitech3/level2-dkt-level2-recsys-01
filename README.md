@@ -101,4 +101,20 @@ Graph 모델은 Dependence Structure를 모델링할 수 있다는 특징으로 
 - LightGCN: GCN 모델은 CNN에서의 Convolution 개념을 GNN에 적용한 것으로 LightGCN 모델은 GCN의 가장 핵심적인 부분만 사용한 더 정확하고 가벼운 추천 모델입니다.
 
 ### Ensemble
-서로 다른 계열의 모델을 앙상블하기 위해 CatBoost, LightGBM, SAKT, Last query, LightGCN 모델의 결과를 활용해서 Hard Voting 한 뒤, 해당 결과를 예측한 모델들 predict 값의 평균을 구하였습니다. 예를 들어 CatBoost, LightGBM, LightGCN 모델이 1로 예측하였고 SAKT, Last query 모델이 0으로 예측하였다면, CatBoost, LightGBM, LightGCN 모델의 predict 값을 평균하여 최종 결과값으로 제시하였습니다.
+1. 서로 다른 계열의 모델을 앙상블하기 위해 CatBoost, LightGBM, SAKT, Last query, LightGCN 모델의 결과를 활용해서 Hard Voting 한 뒤, 해당 결과를 예측한 모델들 predict 값의 평균을 구하였습니다. 예를 들어 CatBoost, LightGBM, LightGCN 모델이 1로 예측하였고 SAKT, Last query 모델이 0으로 예측하였다면, CatBoost, LightGBM, LightGCN 모델의 predict 값을 평균하여 최종 결과값으로 제시하였습니다.
+2. 단일 모델로 가장 성능이 높았던 CatBoost와 LightGBM 모델을 사용하여 앙상블하였습니다. Validation 데이터셋의 결과값을 기준으로 모델을 비교하였을 때 LightGBM:CatBoost = 2:8로 앙상블하였을 때 가장 높은 성능을 보였기 때문에 LightGBM과 CatBoost 모델의 predict 값을 20%와 80%씩 더해 최종 결과값으로 제시하였습니다.
+
+
+## 결과 및 평가
+
+<p align="center">
+  <img src="image/결과 컬럼.png" width="1150">
+</p>
+<p align="center">
+  <img src="image/결과.png" width="1000">
+</p>
+
+Ensemble 중 두 번째 방법으로 최종 결과값을 제출한 결과 AUROC 값은 0.8532, Accuracy 값은 0.7661을 기록하였습니다. 실제로 제출하지는 않았지만 가장 높은 성능을 기록한 모델은 54개의 변수를 사용한 LightGBM 모델로 AUROC 값은 0.8559, Accuracy 값은 0.7715을 기록하였습니다. 해당 데이터셋의 경우 Sequential 특징을 반영한 GBM 계열의 모델이 우수한 성능을 보이는 것으로 나타났습니다.
+
+
+
