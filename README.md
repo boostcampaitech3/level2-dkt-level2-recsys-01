@@ -72,9 +72,16 @@ AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Pos
 
 1. Feature 세분화 : `assessmentItemID` ⇒ `category`, `test`, `item`</br>
   세분화한 변수들의 정답률을 비교하였을 때, `category`와 `item` 변수는 값에 따라 정답률의 차이를 보여 category 타입의 변수로 가공하였습니다.
+  <p align="center">
+    <img src="image/assessmentID.png" width="800">
+  </p>
+  
 
 2. `KnowledgeTag`를 활용한 `chapter` 변수 생성</br>
-  `testId` 별 고유힌 `KnowledgeTag`들을 집합으로 묶었으며, 서로 다른 `testId`를 가지더라도, 두 시험지의 `KnowledgeTag` 집합 사이에 교집합이 존재한다면 두 시험지는 같은 내용을 다루는 시험지라고 판단하여 동일한 `chapter`로 분류하였습니다.
+  `testId` 별 고유힌 `KnowledgeTag`들을 집합으로 묶었으며, 서로 다른 `testId`를 가지더라도, 두 시험지의 `KnowledgeTag` 집합 사이에 교집합이 존재한다면 두 시험지는 같은 내용을 다루는 시험지라고 판단하여 동일한 `chapter`로 분류하였습니다. 예를 들어 아래 이미지에서 `testId` ‘A010000001’와 ‘A010000002’의 KnowledgeTagSet은 각각 {5844}와 {6803, 5844} 이며, 5844라는 KnowledgeTag가 겹치므로 같은 `chapter`에 속하게 됩니다.
+  <p align="center">
+    <img src="image/knowledgetag.png" width="500">
+  </p>
   
 3. 학생의 실력 향상 관련 변수 생성</br>
   학습을 통해 실력이 향상될 수 있기 때문에, 학생의 실력을 시간에 따라 나타낼 수 있는 변수들을 추가하였습니다. 현재까지 학생이 푼 모든 문제에 대하여 누적 문제 개수, 누적 정답 개수, 정확도를 변수로 생성하였습니다.
