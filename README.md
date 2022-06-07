@@ -1,11 +1,11 @@
 # Deep Knowledge Tracing (DKT)
-</br>
 
 ## 팀원 소개
 
 |                                                  [김동현](https://github.com/donghyyun)                                                   |                                                                          [임지원](https://github.com/sophi1127)                                                                           |                                                 [이수연](https://github.com/coding-groot)                                                  |                                                                        [진상우](https://github.com/Jin-s-work)                                                                         |                                                                         [심재정](https://github.com/Jaejeong98)                                                                         |
 | :-------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------: |
 | ![그림1](https://user-images.githubusercontent.com/61958748/172278471-584ffaf5-ea6d-4e63-ae77-7cac4dbae899.png)| ![그림2](https://user-images.githubusercontent.com/61958748/172278474-f2d54e27-898b-4142-af78-b0e370e43ffc.png)| <img width="140" alt="그림3" src="https://user-images.githubusercontent.com/61958748/172278478-f3bbd8ce-3616-4c37-8fa6-4247e20b469e.png">| ![그림4](https://user-images.githubusercontent.com/61958748/172278482-a591c2e4-f4b7-4edf-a390-9e875c2c4226.png)| ![그림5](https://user-images.githubusercontent.com/61958748/172278489-00773bd6-080f-41ec-b828-24f4dabc5f98.png)|
+
 </br>
 
 ## Contribution
@@ -19,6 +19,7 @@
 + [`진상우`](https://github.com/Jin-s-work) &nbsp; LightGCN • wandb
 
 + [`심재정`](https://github.com/Jaejeong98) &nbsp; LSTM • LSTM Attention • Last query • wandb
+
 </br>
 
 ## DKT란?
@@ -35,6 +36,7 @@ DKT를 통해 단순히 시험 성적을 알려주는 것을 넘어서 해당 �
 </p>
 
 해당 프로젝트는 Iscream 데이터셋을 활용하여 학생이 마지막으로 주어진 문제의 정답을 맞출 수 있는지 여부를 예측하는 모델을 구현하였습니다.
+
 </br>
 
 ## 성능 지표
@@ -52,6 +54,7 @@ DKT는 주어진 마지막 문제를 맞았는지(1)와 틀렸는지(0) 분류�
 </p>
 
 AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Positive Rate(x축)과 True Positive Rate(y축)이 이루는 곡선을 의미합니다. AUC가 1이면 모델이 0과 1을 완벽하게 분리해낼 수 있다는 것을 의미하며, 반면에 AUC가 0.5이면 모델이 클래스를 구분하지 못한다는 것을 의미합니다.
+
 </br>
 
 ## 데이터
@@ -66,6 +69,7 @@ AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Pos
 + `answerCode` 사용자가 해당 문항을 맞췄는지 여부에 대한 이진 데이터 : 0은 사용자가 해당 문항을 틀린 것, 1은 사용자가 해당 문항을 맞춘 것입니다.
 + `Timestamp` 사용자가 해당문항을 풀기 시작한 시점의 데이터
 + `KnowledgeTag` 중분류 : 총 912개의 고유 태그가 존재합니다.
+
 </br>
 
 ## EDA & Feature Engineering
@@ -88,6 +92,7 @@ AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Pos
 
 4. 이전 문제를 푸는데 소요된 시간 관련 변수 생성</br>
   `Timestamp` 변수는 문제를 풀기 시작한 시점이므로 다음 문제의 Timestamp에서 현재 Timestamp를 빼 `prev elapsed` 변수를 생성하였습니다. test 데이터의 경우 학생이 푼 마지막 문제이므로 해당 문제를 푸는데 소요된 시간을 알 수 없기 때문에 이전 문제를 푸는데 걸린 시간의 평균(`prev elapsed mean`)을 변수로 생성하였습니다.
+ 
 </br>
 
 ## 모델
@@ -110,6 +115,7 @@ Graph 모델은 Dependence Structure를 모델링할 수 있다는 특징으로 
 ### Ensemble
 1. 서로 다른 계열의 모델을 앙상블하기 위해 CatBoost, LightGBM, SAKT, Last query, LightGCN 모델의 결과를 활용해서 Hard Voting 한 뒤, 해당 결과를 예측한 모델들 predict 값의 평균을 구하였습니다. 예를 들어 CatBoost, LightGBM, LightGCN 모델이 1로 예측하였고 SAKT, Last query 모델이 0으로 예측하였다면, CatBoost, LightGBM, LightGCN 모델의 predict 값을 평균하여 최종 결과값으로 제시하였습니다.
 2. 단일 모델로 가장 성능이 높았던 CatBoost와 LightGBM 모델을 사용하여 앙상블하였습니다. Validation 데이터셋의 결과값을 기준으로 모델을 비교하였을 때 LightGBM:CatBoost = 2:8로 앙상블하였을 때 가장 높은 성능을 보였기 때문에 LightGBM과 CatBoost 모델의 predict 값을 20%와 80%씩 더해 최종 결과값으로 제시하였습니다.
+
 </br>
 
 ## 결과 및 평가
