@@ -87,7 +87,7 @@ AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Pos
 
 ### GBM 계열
 DKT 태스크에서 GBM 계열의 모델의 성능이 높은 것으로 알려져있지만, Sequential한 특징을 변수로 추가해야 한다는 특징이 있습니다. 따라서 GBM 계열의 모델을 사용하기 위해서 하이퍼파라미터 튜닝 뿐만 아니라 Feature Engineering이 중요한 역할을 차지하였습니다.
-1. CatBoost: Catboost는 Gradient Boosting 계열의 모델 중 한 종류이자 Yandex에 의해 개발된 오픈 소스 프레임워크입니다. 기존의 다른 모델에 비해 성능이 뛰어날 뿐 아니라, 카테고리형 변수에 대한 처리와 하이퍼 파라미터 튜닝을 모델 내부적으로 지원하여 구현하기에 편리하다는 장점이 있어 적용하였습니다.
+1. CatBoost: Catboost는 Gradient Boosting 계열의 모델 중 한 종류이자 Yandex에 의해 개발된 오픈 소스 프레임워크입니다. 기존의 다른 모델에 비해 성능이 뛰어날 뿐 아니라, 카테고리형 변수에 대한 처리와 하이퍼 파라미터 튜닝을 모델 내부적으로 지원하여 구현하기에 편리하다는 장점이 있습니다.
 2. LightGBM은: LightGBM은 Gradient Boosting 계열의 모델로 트리 기반의 학습 알고리즘입니다. XGBoost와 함께 자주 사용되지만, XGBoost에 비하여 속도가 빠르다는 장점을 가지고 있습니다.
 
 ### Sequential 계열
