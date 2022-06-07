@@ -98,4 +98,7 @@ DKT 데이터는 학생이 최종 문제를 풀기 전까지의 모든 문제를
 
 ### Graph 계열
 Graph 모델은 Dependence Structure를 모델링할 수 있다는 특징으로 인해 DKT에서는 불가능했던 학습 개념 간 관계를 그래프 형식으로 해석 가능하다는 장점이 있습니다.
-- LightGCN: GCN 모델은 CNN에서의 Convolution 개념을 GNN에 적용한 것으로 LightGCN 모델은 GCN의 가장 핵심적인 부분만 사용한 더 정확하고 가벼운 추천 모델입니다. 
+- LightGCN: GCN 모델은 CNN에서의 Convolution 개념을 GNN에 적용한 것으로 LightGCN 모델은 GCN의 가장 핵심적인 부분만 사용한 더 정확하고 가벼운 추천 모델입니다.
+
+### Ensemble
+서로 다른 계열의 모델을 앙상블하기 위해 CatBoost, LightGBM, SAKT, Last query, LightGCN 모델의 결과를 활용해서 Hard Voting 한 뒤, 해당 결과를 예측한 모델들 predict 값의 평균을 구하였습니다. 예를 들어 CatBoost, LightGBM, LightGCN 모델이 1로 예측하였고 SAKT, Last query 모델이 0으로 예측하였다면, CatBoost, LightGBM, LightGCN 모델의 predict 값을 평균하여 최종 결과값으로 제시하였습니다.
