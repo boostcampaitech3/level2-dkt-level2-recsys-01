@@ -12,7 +12,7 @@
 
 + [`김동현`](https://github.com/donghyyun) &nbsp; EDA • Feature Engineering • CatBoost
 
-+ [`임지원`](https://github.com/sophi1127) &nbsp; EDA • Feature Engineering • LightGBM • SAKT • wandb
++ [`임지원`](https://github.com/sophi1127) &nbsp; EDA • Feature Engineering • LightGBM • SAKT • Ensemble • wandb
 
 + [`이수연`](https://github.com/coding-groot) &nbsp; EDA • LightGCN • Ensemble
 
