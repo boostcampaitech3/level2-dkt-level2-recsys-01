@@ -94,7 +94,8 @@ DKT 태스크에서 GBM 계열의 모델의 성능이 높은 것으로 알려져
 DKT 데이터는 학생이 최종 문제를 풀기 전까지의 모든 문제를 학습에 사용하므로 Sequential 데이터의 특징을 가집니다. 이러한 데이터의 특성을 활용하기 위해서 Sequential 계열의 모델을 사용하였습니다.
 1. DKT: LSTM은 RNN의 단점인 기울기 소실 문제를 해결하기 위해 gate를 추가한 모델이며, LSTM Attention은 LSTM에 self-Attention을 추가한 모델입니다. 순서가 있는 Sequential 데이터에서 특징들을 추출하여 문제를 해결해야 했기 때문에 LSTM과 LSTM Attention을 활용하였습니다.
 2. SAKT: SAKT 모델은 transformer의 attention mechanism을 활용한 모델로, Input → Embedding Layer → Attention Layer → Feed-Forward Layer → Prediction Layer → Output의 과정을 거쳐서 계산됩니다.
-3. Last query: Last query 모델은 Kaggle Riiid AIEd Challenge 2020의 1st place solution입니다. transformer encoder → LSTM → DNN → Output의 과정을 거쳤으며, transformer encoder의 입력으로 sequence의 마지막 query만 사용하여 시간복잡도를 $O(n^2)$에서 $O(n)$로 줄인 모델입니다.
+3. Last query: Last query 모델은 Kaggle Riiid AIEd Challenge 2020의 1st place solution입니다. transformer encoder → LSTM → DNN → Output의 과정을 거쳤으며, transformer encoder의 입력으로 sequence의 마지막 query만 사용하여 시간복잡도를 $O(n^2)$에서 $O(n)$으로 줄인 모델입니다.
 
 ### Graph 계열
-
+Graph 모델은 Dependence Structure를 모델링할 수 있다는 특징으로 인해 DKT에서는 불가능했던 학습 개념 간 관계를 그래프 형식으로 해석 가능하다는 장점이 있습니다.
+- LightGCN: GCN 모델은 CNN에서의 Convolution 개념을 GNN에 적용한 것으로 LightGCN 모델은 GCN의 가장 핵심적인 부분만 사용한 더 정확하고 가벼운 추천 모델입니다. 
