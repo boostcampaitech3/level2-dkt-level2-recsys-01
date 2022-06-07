@@ -68,4 +68,18 @@ AUROC는 ROC 곡선 아래 부분의 넓이를 의미하는데, ROC는 False Pos
 + `KnowledgeTag` 중분류 : 총 912개의 고유 태그가 존재합니다.
 
 
-##
+## EDA & Feature Engineering
+
+1. Feature 세분화 : `assessmentItemID` ⇒ `category`, `test`, `item`</br>
+  세분화한 변수들의 정답률을 비교하였을 때, `category`와 `item` 변수는 값에 따라 정답률의 차이를 보여 category 타입의 변수로 가공하였습니다.
+
+2. `KnowledgeTag`를 활용한 `chapter` 변수 생성</br>
+  `testId` 별 고유힌 `KnowledgeTag`들을 집합으로 묶었으며, 서로 다른 `testId`를 가지더라도, 두 시험지의 `KnowledgeTag` 집합 사이에 교집합이 존재한다면 두 시험지는 같은 내용을 다루는 시험지라고 판단하여 동일한 `chapter`로 분류하였습니다.
+  
+3. 학생의 실력 향상 관련 변수 생성</br>
+  학습을 통해 실력이 향상될 수 있기 때문에, 학생의 실력을 시간에 따라 나타낼 수 있는 변수들을 추가하였습니다. 현재까지 학생이 푼 모든 문제에 대하여 누적 문제 개수, 누적 정답 개수, 정확도를 변수로 생성하였습니다.
+
+4. 이전 문제를 푸는데 소요된 시간 관련 변수 생성</br>
+  `Timestamp` 변수는 문제를 풀기 시작한 시점이므로 다음 문제의 Timestamp에서 현재 Timestamp를 빼 `prev elapsed` 변수를 생성하였습니다. test 데이터의 경우 학생이 푼 마지막 문제이므로 해당 문제를 푸는데 소요된 시간을 알 수 없기 때문에 이전 문제를 푸는데 걸린 시간의 평균(`prev elapsed mean`)을 변수로 생성하였습니다.
+
+
